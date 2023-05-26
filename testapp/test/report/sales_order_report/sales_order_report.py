@@ -67,34 +67,32 @@ def execute(filters=None):
         'fieldtype': 'int',
     }]
     columns +=col3
-
     stm=m.index(fl['Monthly'])+1
     sty=int(fl['yearly'])
     startday= date(sty,stm,1)
     posting_date=[]
     posting_date+= frappe.db.get_all("Sales Invoice",filters=[['posting_date', 'between', [startday, lasday]]],fields=['name','posting_date'])
-    invoiceperson=[]
-    for l in posting_date:
-        invoiceperson+=frappe.get_list('Sales Team', filters = {'parent': l.name}, fields=['sales_person'])
-    list2=[]    
-    list2+= frappe.db.get_all("Sales Order",filters=[['delivery_date', 'between', [startday, lasday]]],fields=['delivery_date'] )
-    due_date=[]
-    for l1 in list2:
-        due_date.append(l1.delivery_date)
-    if invoiceperson or posting_date or due_date:
-        # print(li,list1[0]['posting_date'],li2[0]['due_date'])
-        #print(invoiceperson,posting_date,sloderperson,due_date)
-        invperson=[]
+  
+        
+    if posting_date:
+        invoiceperson=[]
+        for invper in posting_date:
+            l=frappe.get_value('Sales Team',{'parent': invper.name}, 'sales_person')
+            invoiceperson.append(l)
+        sloder=[]
+        for invper1 in posting_date:
+            l0=frappe.get_value('Sales Invoice Item',{'parent': invper1.name},'sales_order')
+            sloder.append(l0)
+        due_date=[]
+        for slodname in sloder:
+            l1=frappe.get_value('Sales Order',slodname,'delivery_date')    
+            due_date.append(l1)
         pos_date=[]
         check=[]
-        for invper in invoiceperson:
-            invperson.append(invper.sales_person)
 
         for pos in posting_date:
             pos_date.append(pos.posting_date)
         
-    
-           
         x=0
         d1=0
         d2=0
@@ -102,7 +100,7 @@ def execute(filters=None):
         check=[]
         row=[]
         temp=0
-        for fetch in invperson:
+        for fetch in invoiceperson:
             result=str(due_date[x]-pos_date[x]) 
             data_cloumn_add=pos_date[x]
             
@@ -122,14 +120,9 @@ def execute(filters=None):
                 data[count1][str(m1)+str(data_cloumn_add.year)+'delay_upto_4_d']+=d2
                 data[count1][str(m1)+str(data_cloumn_add.year)+'delay_above_4_d']+=d3
                 data[count1][str(m1)+str(data_cloumn_add.year)+'total']+=d1+d2+d3
-                
-               
+                data[count1]['total']+=d1+d2+d3
             else:
-             
                 check.append(fetch)
-
-                print(check)
-                print(temp)
                 if result ==on: 
                     d1+=1
                 elif 4 >= int(result[0]):
@@ -137,111 +130,26 @@ def execute(filters=None):
                 elif 4 <= int(result[0]):
                     d3+=1
                 
-                
                 row ={
                     'sales_person':fetch,
                     str(m1)+str(data_cloumn_add.year)+'on_time':d1, 
                     str(m1)+str(data_cloumn_add.year)+'delay_upto_4_d': d2,
                     str(m1)+str(data_cloumn_add.year)+'delay_above_4_d':d3,
-                    str(m1)+str(data_cloumn_add.year)+'total':d1+d2+d3
+                    str(m1)+str(data_cloumn_add.year)+'total':d1+d2+d3,
+                    'total':+d1+d2+d3
                     }
                 data.append(row)
+                
                 temp+=1
             x+=1
-            print(data)
 
     return columns, data
-   
 
-        # print(invperson)
-        # print(pos_date)
-        # print(du_date)   
-
-
-  
-
-
-                    
-                    
-
-
-
-
-
-
-
-
-    #         x.append(date(years,scount+1,days))	
-    #         y.append(df1)
-    # id=[]
     # id1=[]
     # for i,j in zip(x,y):
 
     #     id+= frappe.db.get_all("Sales Invoice",filters=[['posting_date', 'between', [i,j]]],fields=['name','posting_date'])
-    #     id1+= frappe.db.get_all("Sales Order",filters=[['between', [i,j]]],fields=['name'])
-    
-    #     for l1 in id1:
-    #         li2=frappe.get_list('Payment Schedule', filters = {'parent': l1.name}, fields=['due_date'])
-    #         print(l1.name,li2)
-
-    #     for l in id:
-    #         li=frappe.get_list('Sales Team', filters = {'parent': l.name}, fields=['sales_person'])
-    #         s=l.posting_date
-
-      
-
-   
-
-
-    
-    # id= frappe.db.get_all("Sales Invoice",filters={"posting_date":["<=",d2] },fields=['name','posting_date'])
-    # print(id)
-    # li=[]
-    # for x in id:
-    # 	li+=frappe.get_list('Sales Team', filters = {'parent': x.name}, fields=['sales_person'])
-    # 	li1= frappe.db.get_value("Sales Invoice", x.name, ['posting_date'])
-    # 	print(li1)
-    # 	print(li)
-    
-    # id1= frappe.db.get_all("Sales Order")
-    # for x in id:
-    # 	li2=frappe.get_list('Payment Schedule', filters = {'parent': x.name}, fields=['due_date'])
-    # 	print(li2)	
-    # for chname in li:
-    # 	row = {	'sales_person':chname.sales_person,
-    # 			'on_time':None, 
-    # 			'delay_upto_4_d': None,
-    # 			'delay_above_4_d':None,
-    # 			'total':None
-    # 	}
-    # 	data.append(row)
-    
-
-    # 	child1 = frappe.get_doc('Sales Team', person.sales_team[0].name)
-    # 	d=getdate() 
-    # 	d1 = add_to_date(datetime.now(), days=4, as_string=True)
-    # 	d2 =getdate(d1)
-    # 	c1=0
-    # 	c2=0
-    # 	c3=0
-    # 	if person.posting_date == d:    
-    # 		c1+=1
-    # 	if person.posting_date <= d2:    
-    # 		c2+=1
-    
-    # 	if person.posting_date >= d2:    
-    # 		c3+=1	
-        
-    # 	row = {	'sales_person':child1.sales_person,
-    # 			'on_time':c1, 
-    # 			'delay_upto_4_d': c2,
-    # 			'delay_above_4_d':c3,
-    # 			'total':c1+c2+c3
-    # 	}
-    # 	data.append(row)
-    
-
-
-
-    
-
+    # ########
+    #   for nameid in list2: 
+    #     getlist=frappe.get_doc("Sales Order",nameid)
+    #     print("s")

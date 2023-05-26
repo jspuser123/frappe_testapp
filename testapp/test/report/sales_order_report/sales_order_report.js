@@ -131,7 +131,14 @@ frappe.query_reports["sales order report"] = {
             default: '2023',
            
         },
-	]
 
-	
+
+	],		
+
+
 };
+
+
+
+
+
